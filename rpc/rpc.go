@@ -101,8 +101,9 @@ func (c *Client) call(url string, postBody []byte) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	respBody, err = ioutil.ReadAll(resp.Body)
 	defer resp.Body.Close()
+
+	respBody, err = ioutil.ReadAll(resp.Body)
 	if resp.StatusCode > 226 {
 		return respBody, c.httpError(resp.StatusCode)
 	}
