@@ -5,7 +5,7 @@ import (
 	"os"
 
 	log "github.com/Sirupsen/logrus"
-	wrpc "github.com/daneshih1125/openwrt-rpc/rpc"
+	wrpc "github.com/daneshih1125/openwrt-rpc"
 )
 
 // exmaple for openwrt json rpc client.
