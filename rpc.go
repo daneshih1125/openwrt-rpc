@@ -61,7 +61,6 @@ type Response struct {
 }
 
 func New(rpcServer *RpcServer, auth *Auth) (*Client, error) {
-
 	if auth.Timeout == 0 {
 		auth.Timeout = defaultTimeout
 	}
@@ -136,7 +135,7 @@ func (c *Client) url(uri string) string {
 	}
 
 	url := proto + c.rpcServer.Hostname + port + rpcURI + uri
-	if c.token != "" {
+	if uri != "auth" && c.token != "" {
 		url = url + "?auth=" + c.token
 	}
 
