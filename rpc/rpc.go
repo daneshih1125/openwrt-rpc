@@ -7,7 +7,9 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net"
 	"net/http"
+	"time"
 
 	log "github.com/Sirupsen/logrus"
 )
@@ -20,11 +22,14 @@ const (
 var (
 	ErrHttpUnauthorized = errors.New("http: Unauthorized")
 	ErrHttpForbidden    = errors.New("http: Forbidden")
+
+	defaultTimeout = 15
 )
 
 type Auth struct {
 	Username string
 	Password string
+	Timeout  int
 }
 
 type RpcServer struct {
@@ -56,6 +61,10 @@ type Response struct {
 }
 
 func New(rpcServer *RpcServer, auth *Auth) (*Client, error) {
+
+	if auth.Timeout == 0 {
+		auth.Timeout = defaultTimeout
+	}
 	client := &Client{
 		rpcServer: rpcServer,
 		auth:      auth,
@@ -67,6 +76,10 @@ func New(rpcServer *RpcServer, auth *Auth) (*Client, error) {
 			TLSClientConfig: &tls.Config{
 				InsecureSkipVerify: true,
 			},
+			Dial: (&net.Dialer{
+				Timeout:   time.Duration(auth.Timeout) * time.Second,
+				KeepAlive: time.Duration(auth.Timeout) * time.Second,
+			}).Dial,
 		},
 	}
 
@@ -138,7 +151,6 @@ func (c *Client) rpc(library, method string, params []string) (string, error) {
 		return "", errors.New("RPC client is not authenticated")
 	}
 
-	url := c.url(library)
 	payload := Payload{
 		ID:     c.id,
 		Method: method,
@@ -148,9 +160,13 @@ func (c *Client) rpc(library, method string, params []string) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
+	url := c.url(library)
 	respBody, err := c.call(url, data)
+	// Session timeout or OpenWrt reboot
 	if err == ErrHttpUnauthorized || err == ErrHttpForbidden {
 		log.Warn("Login again")
+		url := c.url(library)
 		c.login()
 		respBody, err = c.call(url, data)
 	}

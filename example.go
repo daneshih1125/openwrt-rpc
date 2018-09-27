@@ -11,6 +11,11 @@ import (
 // exmaple for openwrt json rpc client.
 // default is http port 80.
 func main() {
+	if len(os.Args) < 3 {
+		fmt.Fprintf(os.Stderr, "%s [ip] [username] [password]\n", os.Args[0])
+		os.Exit(1)
+	}
+
 	ip := os.Args[1]
 	username := os.Args[2]
 	password := os.Args[3]
@@ -22,6 +27,7 @@ func main() {
 	auth := &wrpc.Auth{
 		Username: username,
 		Password: password,
+		Timeout:  30,
 	}
 
 	w, err := wrpc.New(s, auth)
