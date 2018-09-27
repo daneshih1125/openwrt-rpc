@@ -166,8 +166,8 @@ func (c *Client) rpc(library, method string, params []string) (string, error) {
 	// Session timeout or OpenWrt reboot
 	if err == ErrHttpUnauthorized || err == ErrHttpForbidden {
 		log.Warn("Login again")
-		url := c.url(library)
 		c.login()
+		url = c.url(library)
 		respBody, err = c.call(url, data)
 	}
 
