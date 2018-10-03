@@ -20,6 +20,8 @@ const (
 )
 
 var (
+	ErrRpcLoginFail = errors.New("rpc: login fail")
+
 	ErrHttpUnauthorized = errors.New("http: Unauthorized")
 	ErrHttpForbidden    = errors.New("http: Forbidden")
 
@@ -200,6 +202,11 @@ func (c *Client) login() error {
 	if err != nil {
 		log.Error(err)
 		return err
+	}
+	// OpenWRT JSON RPC response of wrong username and password
+	// {"id":1,"result":null,"error":null}
+	if token == "null" {
+		return ErrRpcLoginFail
 	}
 	c.token = token
 	return err
